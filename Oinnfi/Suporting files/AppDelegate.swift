@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         catch {
             print("Setting category to AVAudioSessionCategoryPlayback failed.")
         }
-        
+        UserDefaults.standard.set("", forKey: "name")
         afterLogin()
         
         return true

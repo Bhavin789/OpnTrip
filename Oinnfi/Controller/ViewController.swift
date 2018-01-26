@@ -9,7 +9,7 @@
 import UIKit
 import SwiftyJSON
 
-class ViewController: UIViewController {
+class ViewController: UIViewController,UITextFieldDelegate {
     
     let loginButton: UIButton = {
         let button = UIButton(type: .system)
@@ -165,6 +165,9 @@ class ViewController: UIViewController {
         passwordTextField.isSecureTextEntry = true
         nameTextField.autocapitalizationType = UITextAutocapitalizationType.none
         
+        nameTextField.delegate = self
+        passwordTextField.delegate = self
+        
        // loginButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 20).isActive = true
        // loginButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 30).isActive = true
        // loginButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
@@ -221,6 +224,9 @@ class ViewController: UIViewController {
         forgetPasswordButton.heightAnchor.constraint(equalToConstant: 15).isActive = true
         forgetPasswordButton.widthAnchor.constraint(equalToConstant: 150).isActive = true
         
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardNotification), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardNotificationForHide), name: .UIKeyboardWillHide, object: nil)
+        
         
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -234,6 +240,15 @@ class ViewController: UIViewController {
         let board = UIStoryboard(name: "Main", bundle: nil)
         let controller = board.instantiateViewController(withIdentifier: "vc2")
         self.present(controller, animated: true, completion: nil)
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
     
     @objc func handleLogin(){
@@ -317,6 +332,37 @@ class ViewController: UIViewController {
             }
         }
         task.resume()
+    }
+    
+    @objc func handleKeyboardNotification(notification: NSNotification){
+        print("Working***********************")
+        if (nameTextField.isFirstResponder && (view.frame.origin.y == 0)) {
+            if let userInfo = notification.userInfo{
+                if let keyboardSize = (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue{
+                    print(keyboardSize.height)
+                    view.frame.origin.y-=100
+                }
+            }
+        }
+        
+        if (passwordTextField.isFirstResponder && (view.frame.origin.y == 0)) {
+            if let userInfo = notification.userInfo{
+                if let keyboardSize = (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue{
+                    print(keyboardSize.height)
+                    view.frame.origin.y-=100
+                }
+            }
+        }
+    }
+    
+    @objc func handleKeyboardNotificationForHide(notification: NSNotification){
+        print("hiding*******************")
+        if let userInfo = notification.userInfo{
+            if let keyboardSize = (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue{
+                print(keyboardSize)
+                view.frame.origin.y = 0
+            }
+        }
     }
     
     func showAlert(_ msg: String){

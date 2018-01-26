@@ -10,9 +10,28 @@ import UIKit
 
 class MyAccountViewController: UIViewController {
 
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var mailLabel: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        if let name = UserDefaults.standard.value(forKey: "name"), let mailId = UserDefaults.standard.value(forKey: "Email"){
+            print("got it")
+            var username = name as! String
+            var emailId = mailId as! String
+            if (username.characters.count > 0 && emailId.count > 0){
+                print(username)
+                nameLabel.text = username
+                mailLabel.text = emailId
+            }else{
+                nameLabel.text = "Please login or signup"
+                mailLabel.text = ""
+            }
+        }else{
+            nameLabel.text = "Please login or signup"
+        }
+        
+        
         // Do any additional setup after loading the view.
     }
 

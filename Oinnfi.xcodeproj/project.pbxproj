@@ -36,6 +36,7 @@
 		F1A26DEA1FEB9F3B0040F984 /* Audio.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A26DE91FEB9F3A0040F984 /* Audio.swift */; };
 		F1A26DEC1FEB9F480040F984 /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A26DEB1FEB9F480040F984 /* Language.swift */; };
 		F1A5FA441FF0E9C00071C89A /* DownloadedFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A5FA431FF0E9C00071C89A /* DownloadedFile.swift */; };
+		F1BA7231201B89E2005151C5 /* MyAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BA7230201B89E2005151C5 /* MyAccountViewController.swift */; };
 		F1BEE7891FFCDE5600678796 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BEE7881FFCDE5600678796 /* SignUpViewController.swift */; };
 		F1BEECEF1FDFD0EB00997B57 /* UploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BEECEE1FDFD0EB00997B57 /* UploadViewController.swift */; };
 		F1DF02671FDE70650068F483 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DF02661FDE70650068F483 /* AppDelegate.swift */; };
@@ -106,6 +107,7 @@
 		F1A26DE91FEB9F3A0040F984 /* Audio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audio.swift; sourceTree = "<group>"; };
 		F1A26DEB1FEB9F480040F984 /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
 		F1A5FA431FF0E9C00071C89A /* DownloadedFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadedFile.swift; sourceTree = "<group>"; };
+		F1BA7230201B89E2005151C5 /* MyAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountViewController.swift; sourceTree = "<group>"; };
 		F1BEE7881FFCDE5600678796 /* SignUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
 		F1BEECEE1FDFD0EB00997B57 /* UploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadViewController.swift; sourceTree = "<group>"; };
 		F1DF02631FDE70650068F483 /* Oinnfi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oinnfi.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -214,6 +216,7 @@
 				F12A37691FE7D61200974330 /* CategoryTableViewController.swift */,
 				F1A26DE21FEB5A5D0040F984 /* ListForAudioViewController.swift */,
 				F1731C531FECD222002535D0 /* PlayerViewController.swift */,
+				F1BA7230201B89E2005151C5 /* MyAccountViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -614,6 +617,7 @@
 				F1A26DE51FEB5B7E0040F984 /* ListForAudioTableViewCell.swift in Sources */,
 				F1A26DEC1FEB9F480040F984 /* Language.swift in Sources */,
 				F1BEECEF1FDFD0EB00997B57 /* UploadViewController.swift in Sources */,
+				F1BA7231201B89E2005151C5 /* MyAccountViewController.swift in Sources */,
 				F1731C511FECB8F4002535D0 /* MBProgressHUD.m in Sources */,
 				F1DF026F1FDE70650068F483 /* Oinnfi.xcdatamodeld in Sources */,
 				F1A5FA441FF0E9C00071C89A /* DownloadedFile.swift in Sources */,

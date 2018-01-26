@@ -484,7 +484,7 @@
         <!--My Account-->
         <scene sceneID="fnZ-cN-rZO">
             <objects>
-                <viewController id="Bnr-2D-Pnt" sceneMemberID="viewController">
+                <viewController id="Bnr-2D-Pnt" customClass="MyAccountViewController" customModule="Oinnfi" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nQx-sT-UTx">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -533,6 +533,10 @@
                             </button>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="mailLabel" destination="3UR-91-az5" id="Igv-o2-Bzs"/>
+                        <outlet property="nameLabel" destination="rf0-WM-WBL" id="jyi-Xx-Tip"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LNn-Qe-GCY" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
