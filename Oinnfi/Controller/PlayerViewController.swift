@@ -129,6 +129,15 @@ class PlayerViewController: UIViewController {
         return label
     }()
     
+    let storyDescription: UILabel = {
+        let label = UILabel()
+        label.text = " cbejbcker "
+        label.textColor = UIColor(red: 100/255, green: 100/255, blue: 100/255, alpha: 1)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        //label.backgroundColor = UIColor.green
+        return label
+    }()
+    
     let storyTypes: UILabel = {
         let label = UILabel()
         label.text = "STORY TYPES"
@@ -200,6 +209,7 @@ class PlayerViewController: UIViewController {
         myView.addSubview(contentLabel)
         myView.addSubview(lengthLabel)
         myView.addSubview(aboutLabel)
+        myView.addSubview(storyDescription)
         subView.addSubview(currTime)
         subView.addSubview(durTime)
         subView.addSubview(playpauseButton)
@@ -265,17 +275,17 @@ class PlayerViewController: UIViewController {
         controlSeparator.heightAnchor.constraint(equalToConstant: 1).isActive = true
         controlSeparator.leftAnchor.constraint(equalTo: myView.leftAnchor).isActive = true
         
-        storyTeller.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
-        storyTeller.topAnchor.constraint(equalTo: subView.bottomAnchor, constant: 8).isActive = true
-        storyTeller.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -8).isActive = true
-        storyTeller.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        aboutLabel.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        aboutLabel.topAnchor.constraint(equalTo: subView.bottomAnchor, constant: 8).isActive = true
+        aboutLabel.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -8).isActive = true
+        aboutLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
-        tellerName.topAnchor.constraint(equalTo: storyTeller.bottomAnchor, constant: 8).isActive = true
-        tellerName.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
-        tellerName.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
-        tellerName.heightAnchor.constraint(equalToConstant: 18).isActive = true
+        storyDescription.topAnchor.constraint(equalTo: aboutLabel.bottomAnchor, constant: 8).isActive = true
+        storyDescription.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        storyDescription.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
+        storyDescription.heightAnchor.constraint(equalToConstant: 18).isActive = true
         
-        storyTypes.topAnchor.constraint(equalTo: tellerName.bottomAnchor, constant: 16).isActive = true
+        storyTypes.topAnchor.constraint(equalTo: storyDescription.bottomAnchor, constant: 16).isActive = true
         storyTypes.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
         storyTypes.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
         storyTypes.heightAnchor.constraint(equalToConstant: 20).isActive = true
@@ -290,10 +300,15 @@ class PlayerViewController: UIViewController {
         lengthLabel.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
         lengthLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
-        aboutLabel.topAnchor.constraint(equalTo: lengthLabel.bottomAnchor, constant: 16).isActive = true
-        aboutLabel.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
-        aboutLabel.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
-        aboutLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        storyTeller.topAnchor.constraint(equalTo: lengthLabel.bottomAnchor, constant: 16).isActive = true
+        storyTeller.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        storyTeller.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
+        storyTeller.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        tellerName.topAnchor.constraint(equalTo: storyTeller.bottomAnchor, constant: 8).isActive = true
+        tellerName.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        tellerName.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -24).isActive = true
+        tellerName.heightAnchor.constraint(equalToConstant: 18).isActive = true
         
         
     }
