@@ -30,8 +30,8 @@ class PlayerViewController: UIViewController {
     let mainView: UIView = {
         let myView = UIView()
         myView.translatesAutoresizingMaskIntoConstraints = false
-        myView.layer.shadowOpacity = 0.6
-        myView.layer.shadowRadius = 10
+        myView.layer.shadowOpacity = 1
+        myView.layer.shadowRadius = 24
         myView.backgroundColor = UIColor.white
         myView.layer.shadowColor = UIColor.lightGray.cgColor
         myView.layer.cornerRadius = 8
@@ -43,7 +43,7 @@ class PlayerViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "icons8-delete-50 (1)")
+        imageView.image = #imageLiteral(resourceName: "logo")
         imageView.clipsToBounds = true
         imageView.layer.shadowRadius = 20
         imageView.layer.shadowOpacity = 0.6
@@ -54,17 +54,15 @@ class PlayerViewController: UIViewController {
     let cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle(nil, for: .normal)
-        button.setImage(UIImage(named: "cancelImage"), for: .normal)
+        button.setBackgroundImage(#imageLiteral(resourceName: "cancelImage"), for: .normal)
         return button
     }()
     
     let playpauseButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.layer.cornerRadius = 8
-        button.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1)
-        button.titleLabel?.text = "Play"
+        button.setTitle(nil, for: .normal)
+        button.setBackgroundImage(#imageLiteral(resourceName: "play.png"), for: .normal)
         return button
     }()
     
@@ -214,8 +212,9 @@ class PlayerViewController: UIViewController {
         flag = 1
         isPlaying = false
         tellerName.text = storyteller
-        lengthLabel.text = "Length - \(length)"
-        contentLabel.text = "Content Maturity - \(maturity)"
+        lengthLabel.text = "Length - \(length!)"
+        contentLabel.text = "Content Maturity - \(maturity!)"
+        image.loadImageUsingCacheWithUrlString(urlString: imageUrl)
         downloadFileToDB()
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -223,20 +222,20 @@ class PlayerViewController: UIViewController {
     func setupPlayerUI(){
         
         cancelButton.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
-        cancelButton.heightAnchor.constraint(equalToConstant: 36).isActive = true
-        cancelButton.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        cancelButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        cancelButton.widthAnchor.constraint(equalToConstant: 32).isActive = true
         cancelButton.topAnchor.constraint(equalTo: myView.topAnchor, constant: 3).isActive = true
 
         
-        mainView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
-        mainView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -8).isActive = true
+        mainView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 16).isActive = true
+        mainView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -16).isActive = true
         mainView.topAnchor.constraint(equalTo: cancelButton.bottomAnchor, constant: 8).isActive = true
         mainView.bottomAnchor.constraint(equalTo: myView.bottomAnchor, constant: -370).isActive = true
         
-        image.leftAnchor.constraint(equalTo: mainView.leftAnchor, constant: 16).isActive = true
-        image.topAnchor.constraint(equalTo: mainView.topAnchor, constant: 16).isActive = true
-        image.rightAnchor.constraint(equalTo: mainView.rightAnchor, constant: -16).isActive = true
-        image.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: -16).isActive = true
+        image.leftAnchor.constraint(equalTo: mainView.leftAnchor, constant: 0).isActive = true
+        image.topAnchor.constraint(equalTo: mainView.topAnchor, constant: 0).isActive = true
+        image.rightAnchor.constraint(equalTo: mainView.rightAnchor, constant: 0).isActive = true
+        image.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: 0).isActive = true
         
         subView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 0).isActive = true
         subView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: 0).isActive = true
@@ -331,11 +330,13 @@ class PlayerViewController: UIViewController {
         print("HI")
         
         if isPlaying!{
-            button.titleLabel?.text = "Play"
+            //button.titleLabel?.text = "Play"
+            button.setBackgroundImage(#imageLiteral(resourceName: "play"), for: .normal)
             self.handlePause()
         }
         else{
-            button.titleLabel?.text = "Pause"
+            button.setBackgroundImage(#imageLiteral(resourceName: "ic_launcher"), for: .normal)
+            //button.titleLabel?.text = "Pause"
             self.handlePlay()
         }
     }

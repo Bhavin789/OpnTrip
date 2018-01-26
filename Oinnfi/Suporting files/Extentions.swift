@@ -41,6 +41,8 @@ extension UIImageView{
                     
                     imageCache.setObject(downloadedimage, forKey: urlString as AnyObject)
                     self.image = downloadedimage
+                } else{
+                    self.image = #imageLiteral(resourceName: "logo")
                 }
                 
             })

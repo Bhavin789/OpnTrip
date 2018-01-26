@@ -38,7 +38,7 @@
                                     <constraint firstAttribute="width" constant="30" id="4kT-Dp-9jy"/>
                                     <constraint firstAttribute="height" constant="30" id="sJ3-WA-G0n"/>
                                 </constraints>
-                                <state key="normal" image="icons8-delete-50 (1)"/>
+                                <state key="normal" image="cancelImage"/>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sign Up" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FJj-Oi-wWp">
                                 <rect key="frame" x="72" y="87" width="270" height="58"/>
@@ -648,8 +648,8 @@
         <image name="Upload_Icons" width="144" height="144"/>
         <image name="User_Profile.png" width="128" height="128"/>
         <image name="avatar1" width="32" height="32"/>
+        <image name="cancelImage" width="50" height="50"/>
         <image name="house.png" width="32" height="32"/>
-        <image name="icons8-delete-50 (1)" width="50" height="50"/>
         <image name="logo" width="180" height="180"/>
         <image name="upload_icon" width="32" height="32"/>
     </resources>
