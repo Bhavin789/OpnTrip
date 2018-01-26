@@ -159,6 +159,7 @@ class ListForAudioViewController: UITableViewController {
         viewController.maturity = items[indexPath.row].contentMaturity!
         viewController.length = items[indexPath.row].length!
         viewController.url = audio[indexPath.row].audioFullPath
+        viewController.imageUrl = items[indexPath.row].coverImage
         
         self.present(viewController, animated: true, completion: nil)
         

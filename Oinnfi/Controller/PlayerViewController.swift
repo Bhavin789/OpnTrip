@@ -25,6 +25,7 @@ class PlayerViewController: UIViewController {
     var storyteller: String!
     var about : String!
     var length: String!
+    var imageUrl: String!
     
     let mainView: UIView = {
         let myView = UIView()
@@ -37,21 +38,32 @@ class PlayerViewController: UIViewController {
         return myView
     }()
     
-    let topView: UIView = {
-        let myView = UIView()
-        myView.translatesAutoresizingMaskIntoConstraints = false
-        // myView.layer.shadowOpacity = 0.6
-        // myView.layer.shadowRadius = 10
-        myView.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1)
-        // myView.layer.shadowColor = UIColor.lightGray.cgColor
-        // myView.layer.cornerRadius = 8
-        return myView
+    
+    let image: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "icons8-delete-50 (1)")
+        imageView.clipsToBounds = true
+        imageView.layer.shadowRadius = 20
+        imageView.layer.shadowOpacity = 0.6
+        imageView.layer.cornerRadius = 8
+        return imageView
+    }()
+    
+    let cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle(nil, for: .normal)
+        button.setImage(UIImage(named: "cancelImage"), for: .normal)
+        return button
     }()
     
     let playpauseButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = UIColor.red
+        button.layer.cornerRadius = 8
+        button.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1)
         button.titleLabel?.text = "Play"
         return button
     }()
@@ -181,6 +193,7 @@ class PlayerViewController: UIViewController {
         playbackSlider?.layer.shadowColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1).cgColor
         myView.addSubview(playbackSlider!)
         myView.addSubview(mainView)
+        myView.addSubview(cancelButton)
         myView.addSubview(subView)
         myView.addSubview(controlSeparator)
         myView.addSubview(storyTeller)
@@ -189,13 +202,14 @@ class PlayerViewController: UIViewController {
         myView.addSubview(contentLabel)
         myView.addSubview(lengthLabel)
         myView.addSubview(aboutLabel)
-        myView.addSubview(topView)
         subView.addSubview(currTime)
         subView.addSubview(durTime)
         subView.addSubview(playpauseButton)
+        mainView.addSubview(image)
         playpauseButton.isEnabled = false
         
         setupPlayerUI()
+        cancelButton.addTarget(self, action: #selector(handleDismiss), for: .touchUpInside)
         playpauseButton.addTarget(self, action: #selector(handlePlayPause), for: .touchUpInside)
         flag = 1
         isPlaying = false
@@ -208,15 +222,21 @@ class PlayerViewController: UIViewController {
     
     func setupPlayerUI(){
         
-        topView.topAnchor.constraint(equalTo: myView.topAnchor, constant: 3).isActive = true
-        topView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 0).isActive = true
-        topView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: 0).isActive = true
-        topView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        cancelButton.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        cancelButton.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        cancelButton.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        cancelButton.topAnchor.constraint(equalTo: myView.topAnchor, constant: 3).isActive = true
+
         
         mainView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
         mainView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -8).isActive = true
-        mainView.topAnchor.constraint(equalTo: topView.bottomAnchor, constant: 5).isActive = true
+        mainView.topAnchor.constraint(equalTo: cancelButton.bottomAnchor, constant: 8).isActive = true
         mainView.bottomAnchor.constraint(equalTo: myView.bottomAnchor, constant: -370).isActive = true
+        
+        image.leftAnchor.constraint(equalTo: mainView.leftAnchor, constant: 16).isActive = true
+        image.topAnchor.constraint(equalTo: mainView.topAnchor, constant: 16).isActive = true
+        image.rightAnchor.constraint(equalTo: mainView.rightAnchor, constant: -16).isActive = true
+        image.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: -16).isActive = true
         
         subView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 0).isActive = true
         subView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: 0).isActive = true
@@ -284,25 +304,6 @@ class PlayerViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func urlForNewImage() -> String {
-        return "\(documentPath())/\(uuid()).jpg"
-    }
-    
-    func urlForNewMp3() -> String {
-        return "\(documentPath())/\(uuid()).mp3"
-    }
-    
-    func documentPath() -> String {
-        let strPath: String = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        return strPath
-    }
-    
-    func uuid() -> String {
-        let uuidRef: CFUUID = CFUUIDCreate(nil)
-        let uuidStringRef: CFString = CFUUIDCreateString(nil, uuidRef)
-        return (uuidStringRef as? String) ?? ""
-    }
-    
     func downloadFileToDB(){
         
         guard let audioUrl = url else{ return }
@@ -314,13 +315,6 @@ class PlayerViewController: UIViewController {
                 let audiodata = try Data(contentsOf: URL(string: trackURL)!)
                 print("AUDIO DATA******")
                 print(audiodata)
-                
-                let fileManager = FileManager.default
-                let documentsurl = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-                let documentPath = documentsurl.path
-                
-                let filepath = documentsurl.appendingPathComponent("\(self.uuid()).mp3")
-                print(filepath)
                 
                 DispatchQueue.main.async {
                     self.playAudio(audiodata)
@@ -362,6 +356,12 @@ class PlayerViewController: UIViewController {
         flag = 0
         self.updateSliderLabels()
         
+    }
+    
+    @objc func handleDismiss(){
+        self.player = nil
+        handlePause()
+        self.dismiss(animated: true, completion: nil)
     }
     
     @objc func playbackSliderValueChangedForTouchUpInside(_ playbackSlider: UISlider){
