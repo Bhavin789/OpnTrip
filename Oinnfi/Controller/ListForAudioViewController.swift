@@ -160,6 +160,7 @@ class ListForAudioViewController: UITableViewController {
         viewController.length = items[indexPath.row].length!
         viewController.url = audio[indexPath.row].audioFullPath
         viewController.imageUrl = items[indexPath.row].coverImage
+        viewController.storyName = items[indexPath.row].name
         
         self.present(viewController, animated: true, completion: nil)
         

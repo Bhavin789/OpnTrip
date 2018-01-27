@@ -26,6 +26,10 @@ class PlayerViewController: UIViewController {
     var about : String!
     var length: String!
     var imageUrl: String!
+    var audiodata: Data!
+    var storyName: String!
+    
+    var actInd: UIActivityIndicatorView = UIActivityIndicatorView()
     
     let mainView: UIView = {
         let myView = UIView()
@@ -62,7 +66,7 @@ class PlayerViewController: UIViewController {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle(nil, for: .normal)
-        button.setBackgroundImage(#imageLiteral(resourceName: "play.png"), for: .normal)
+        button.setBackgroundImage(nil, for: .normal)
         return button
     }()
     
@@ -176,6 +180,18 @@ class PlayerViewController: UIViewController {
         return label
     }()
     
+    let storyNameLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Unknown"
+        //label.backgroundColor = UIColor.green
+        label.font = UIFont(name: "HelveticaNeue", size: 20)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .center
+        label.textColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1)
+        return label
+    }()
+    
+    
     var timer: Timer!
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -183,13 +199,13 @@ class PlayerViewController: UIViewController {
         let scrollView = UIScrollView(frame: self.view.bounds)
         scrollView.backgroundColor = UIColor.white
         self.view.addSubview(scrollView)
-        scrollView.contentSize = CGSize(width: self.view.frame.width, height: self.view.frame.height + 150)
+        scrollView.contentSize = CGSize(width: self.view.frame.width, height: self.view.frame.height + 200)
         
-        myView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height + 150))
+        myView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height + 200))
         myView.backgroundColor = UIColor.white
         scrollView.addSubview(myView)
         
-        playbackSlider = UISlider(frame:CGRect(x: 10, y: 368, width: 300, height: 15))
+        playbackSlider = UISlider(frame:CGRect(x: 10, y: 418, width: 300, height: 15))
         playbackSlider!.minimumValue = 0
         playbackSlider?.maximumValue = 0
         playbackSlider!.isContinuous = true
@@ -210,9 +226,11 @@ class PlayerViewController: UIViewController {
         myView.addSubview(lengthLabel)
         myView.addSubview(aboutLabel)
         myView.addSubview(storyDescription)
+        myView.addSubview(storyNameLabel)
         subView.addSubview(currTime)
         subView.addSubview(durTime)
         subView.addSubview(playpauseButton)
+        subView.addSubview(actInd)
         mainView.addSubview(image)
         playpauseButton.isEnabled = false
         
@@ -224,6 +242,17 @@ class PlayerViewController: UIViewController {
         tellerName.text = storyteller
         lengthLabel.text = "Length - \(length!)"
         contentLabel.text = "Content Maturity - \(maturity!)"
+        storyNameLabel.text = storyName
+        
+        actInd.activityIndicatorViewStyle =
+            UIActivityIndicatorViewStyle.gray
+        actInd.tintColor = .red
+        actInd.translatesAutoresizingMaskIntoConstraints = false
+        //actInd.center = CGPoint(x: loadingView.frame.size.width / 2, y: loadingView.frame.size.height / 2)
+        //loadingView.addSubview(actInd)
+        
+        //myView.addSubview(loadingView)
+        actInd.startAnimating()
         image.loadImageUsingCacheWithUrlString(urlString: imageUrl)
         downloadFileToDB()
         // Do any additional setup after loading the view, typically from a nib.
@@ -236,16 +265,20 @@ class PlayerViewController: UIViewController {
         cancelButton.widthAnchor.constraint(equalToConstant: 32).isActive = true
         cancelButton.topAnchor.constraint(equalTo: myView.topAnchor, constant: 3).isActive = true
 
-        
         mainView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 16).isActive = true
         mainView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -16).isActive = true
         mainView.topAnchor.constraint(equalTo: cancelButton.bottomAnchor, constant: 8).isActive = true
-        mainView.bottomAnchor.constraint(equalTo: myView.bottomAnchor, constant: -370).isActive = true
+        mainView.bottomAnchor.constraint(equalTo: myView.bottomAnchor, constant: -420).isActive = true
         
         image.leftAnchor.constraint(equalTo: mainView.leftAnchor, constant: 0).isActive = true
         image.topAnchor.constraint(equalTo: mainView.topAnchor, constant: 0).isActive = true
         image.rightAnchor.constraint(equalTo: mainView.rightAnchor, constant: 0).isActive = true
         image.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: 0).isActive = true
+        
+        storyNameLabel.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 8).isActive = true
+        storyNameLabel.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: -8).isActive = true
+        storyNameLabel.topAnchor.constraint(equalTo: mainView.bottomAnchor, constant: 10).isActive = true
+        storyNameLabel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         
         subView.leftAnchor.constraint(equalTo: myView.leftAnchor, constant: 0).isActive = true
         subView.rightAnchor.constraint(equalTo: myView.rightAnchor, constant: 0).isActive = true
@@ -256,6 +289,11 @@ class PlayerViewController: UIViewController {
         playpauseButton.widthAnchor.constraint(equalToConstant: 60).isActive = true
         playpauseButton.topAnchor.constraint(equalTo: subView.topAnchor, constant: 8).isActive  = true
         playpauseButton.bottomAnchor.constraint(equalTo: subView.bottomAnchor, constant: -8).isActive = true
+        
+        actInd.centerXAnchor.constraint(equalTo: subView.centerXAnchor).isActive = true
+        actInd.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        actInd.topAnchor.constraint(equalTo: subView.topAnchor, constant: 8).isActive  = true
+        actInd.bottomAnchor.constraint(equalTo: subView.bottomAnchor, constant: -8).isActive = true
         
         currTime.leftAnchor.constraint(equalTo: subView.leftAnchor, constant: 24).isActive = true
         currTime.centerYAnchor.constraint(equalTo: subView.centerYAnchor).isActive = true
@@ -326,18 +364,18 @@ class PlayerViewController: UIViewController {
         r.async(execute: {() -> Void in
             
             do {
-                let audiodata = try Data(contentsOf: URL(string: trackURL)!)
+                self.audiodata = try Data(contentsOf: URL(string: trackURL)!)
                 print("AUDIO DATA******")
-                print(audiodata)
-                
+                print(self.audiodata)
                 DispatchQueue.main.async {
-                    self.playAudio(audiodata)
+                    self.actInd.stopAnimating()
+                    self.playpauseButton.setBackgroundImage(#imageLiteral(resourceName: "play"), for: .normal)
+                    self.playAudio(self.audiodata)
                 }
             } catch let error {
                 print(error.localizedDescription)
             }
         })
-        
         
     }
     
