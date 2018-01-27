@@ -149,13 +149,23 @@ class ListForAudioViewController: UITableViewController {
                                     if let language = subJson["value"].string{
                                         item.language = language
                                         self.language.append(language)
+                                    }else{
+                                        item.language = ""
                                     }
                                 case "Content Maturity":
-                                    item.contentMaturity = subJson["value"].string!
+                                    if let maturity = subJson["value"].string{
+                                        item.contentMaturity = maturity
+                                    }else{
+                                        item.contentMaturity = ""
+                                    }
                                 case "Length":
-                                    item.length = subJson["value"].string!
+                                    if let length = subJson["value"].string{
+                                        item.length = length
+                                    }else{
+                                        item.length = ""
+                                    }
                                 default:
-                                    print("")
+                                    print("Locha hai")
                                 }
                             }
                             
@@ -197,7 +207,7 @@ class ListForAudioViewController: UITableViewController {
         cell?.categoryImageView.loadImageUsingCacheWithUrlString(urlString: items[indexPath.row].coverImage)
         cell?.titleLabel.text = items[indexPath.row].name
         //print(items[indexPath.row].name)
-        cell?.subTitleLabel.text = language[indexPath.row]
+        cell?.subTitleLabel.text = items[indexPath.row].language
         cell?.deleteButton.addTarget(self, action: #selector(downloadFileToDB), for: .touchUpInside)
         // Configure the cell...
         
