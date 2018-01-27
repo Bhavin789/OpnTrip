@@ -32,17 +32,43 @@ class ListForAudioViewController: UITableViewController {
     var track: DownloadedFile!
     var imagePath: String!
     var audioUrl: String!
+    var container: UIView!
+    var actInd: UIActivityIndicatorView = UIActivityIndicatorView()
+    var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView()
+    var isReceiving: Bool!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        tableView.separatorStyle = .none
         tableView.register(DownloadCell.self, forCellReuseIdentifier: "reuseIdentifier")
         self.navigationItem.title = name
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white, NSAttributedStringKey.font: UIFont(name: "Arial", size: 18.0)!]
         self.navigationController?.navigationBar.barTintColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 1)
         self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.isTranslucent = false
+        
+        container = UIView()
+        container.frame = view.frame
+        container.center = view.center
+        container.backgroundColor = .white
+        isReceiving = true
+        
+        var loadingView: UIView = UIView()
+        loadingView.frame = CGRect(x: view.center.x - 40, y: view.center.y - (self.navigationController?.navigationBar.frame.height)! - 40, width: 80, height: 80)
+       // loadingView.center = view.center
+        loadingView.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 0.7)
+        loadingView.clipsToBounds = true
+        loadingView.layer.cornerRadius = 10
+        
+        actInd.frame = CGRect(x: 0, y: 0, width: 40.0, height: 40.0)
+        actInd.activityIndicatorViewStyle =
+            UIActivityIndicatorViewStyle.whiteLarge
+        actInd.center = CGPoint(x: loadingView.frame.size.width / 2, y: loadingView.frame.size.height / 2)
+        loadingView.addSubview(actInd)
+        container.addSubview(loadingView)
+        actInd.hidesWhenStopped = true
+        self.tableView.backgroundView = container
         
         count = 1;
         getData()
@@ -71,71 +97,97 @@ class ListForAudioViewController: UITableViewController {
     }
     
     func getData(){
+        actInd.startAnimating()
         
         let id = Int(cat_id)
-        guard let categoryid = id, let c = count else{
+        guard let categoryid = id else{
             print("error")
             return
         }
         
-        let request = NSMutableURLRequest(url: NSURL(string: "\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(c)")! as URL)
-        
-        request.httpMethod = "GET"
-        
-        let task = URLSession.shared.dataTask(with: request.url!) { (data, response, error) -> Void in
+        //while(isReceiving){
+            print(count)
+            let request = NSMutableURLRequest(url: NSURL(string: "\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")! as URL)
             
-            if let data = data {
-                let json = JSON(data)
-                for (_, subJson): (String, JSON) in json["datajson"]["products"]{
-                    if var item = Item(fromJson: subJson){
-                        
-                        // MARK: Loop to extract only the audio
-                        
-                        for (_, subJson): (String, JSON) in item.audio{
-                            guard let audioId = subJson["id"].string,
-                                let proId = subJson["product_id"].string,
-                                let title = subJson["title"].string,
-                                let fullPath = subJson["full_path"].string,
-                                let cuttingPath = subJson["cutting_path"].string else{
-                                    return
+            print("\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")
+            
+            request.httpMethod = "GET"
+            
+            let task = URLSession.shared.dataTask(with: request.url!) { (data, response, error) -> Void in
+                
+                if let data = data {
+                    print()
+                    let json = JSON(data)
+                    for (_, subJson): (String, JSON) in json["datajson"]["products"]{
+                        if var item = Item(fromJson: subJson){
+                            
+                            // MARK: Loop to extract only the audio
+                            // print(item.narratorName)
+                            if item.narratorName == "null"{
+                                print("Take the call out")
                             }
                             
-                            let audio = Audio(id: audioId, proId: proId, title: title, fullPath: fullPath, cutPath: cuttingPath)
-                            self.audio.append(audio)
-                        }
-                        
-                        // MARK: Loop to extract only the language
-                        
-                        for (_, subJson): (String, JSON) in item.features{
-                            let name = subJson["name"]
-                            switch name{
-                            case "Language":
-                                if let language = subJson["value"].string{
-                                    item.language = language
-                                    self.language.append(language)
+                            for (_, subJson): (String, JSON) in item.audio{
+                                guard let audioId = subJson["id"].string,
+                                    let proId = subJson["product_id"].string,
+                                    let title = subJson["title"].string,
+                                    let fullPath = subJson["full_path"].string,
+                                    let cuttingPath = subJson["cutting_path"].string else{
+                                        return
                                 }
-                            case "Content Maturity":
-                                item.contentMaturity = subJson["value"].string!
-                            case "Length":
-                                item.length = subJson["value"].string!
-                            default:
-                                print("")
+                                
+                                let audio = Audio(id: audioId, proId: proId, title: title, fullPath: fullPath, cutPath: cuttingPath)
+                                self.audio.append(audio)
+                            }
+                            
+                            // MARK: Loop to extract only the language
+                            
+                            for (_, subJson): (String, JSON) in item.features{
+                                let name = subJson["name"]
+                                switch name{
+                                case "Language":
+                                    if let language = subJson["value"].string{
+                                        item.language = language
+                                        self.language.append(language)
+                                    }
+                                case "Content Maturity":
+                                    item.contentMaturity = subJson["value"].string!
+                                case "Length":
+                                    item.length = subJson["value"].string!
+                                default:
+                                    print("")
+                                }
+                            }
+                            
+                            self.items.append(item)
+                        } else {
+                            self.isReceiving = false
+                            
+                            DispatchQueue.main.async {
+                                self.activityIndicatorView.stopAnimating()
+                                self.tableView.tableFooterView = nil
+                                print("Take the call out of the func")
+                                return
                             }
                         }
-                        
-                        self.items.append(item)
                     }
+                    
+                    DispatchQueue.main.async {
+                        self.tableView.separatorStyle = .singleLine
+                        self.actInd.stopAnimating()
+                        self.container.isHidden = true
+                        self.tableView.reloadData()
+                    }
+                    
+                } else if let error = error {
+                    print(error.localizedDescription)
                 }
-                
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-                
-            } else if let error = error {
-                print(error.localizedDescription)
             }
-        }
-        task.resume()
+            task.resume()
+        //}
+        
+        
+        
         print("Task completed")
     }
     
@@ -144,7 +196,7 @@ class ListForAudioViewController: UITableViewController {
         
         cell?.categoryImageView.loadImageUsingCacheWithUrlString(urlString: items[indexPath.row].coverImage)
         cell?.titleLabel.text = items[indexPath.row].name
-        print(items[indexPath.row].name)
+        //print(items[indexPath.row].name)
         cell?.subTitleLabel.text = language[indexPath.row]
         cell?.deleteButton.addTarget(self, action: #selector(downloadFileToDB), for: .touchUpInside)
         // Configure the cell...
@@ -169,6 +221,37 @@ class ListForAudioViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
         
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == items.count - 1 {
+            var lastSectionIndex: Int = tableView.numberOfSections - 1
+            var lastRowIndex: Int = tableView.numberOfRows(inSection: lastSectionIndex) - 1
+            if (indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex) {
+                // This is the last cell
+                count = count + 1
+                if isReceiving{
+                   getData()
+                }
+                print("Last cell")
+            }
+            if isReceiving{
+               setupTableViewFooter()
+            }
+        }
+    }
+    
+    func setupTableViewFooter() {
+        // set up label
+        let footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: navigationController?.navigationBar.frame.size.height ?? 0.0))
+        //footerView.backgroundColor = [UIColor redColor];
+        // set up activity indicator
+        activityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        activityIndicatorView.hidesWhenStopped = true
+        activityIndicatorView.startAnimating()
+        footerView.addSubview(activityIndicatorView)
+        activityIndicatorView.frame = CGRect(x: footerView.frame.size.width / 2 - 15, y: 10, width: 30, height: 30)
+        tableView.tableFooterView = footerView
     }
     
     @objc func downloadFileToDB(_ sender: UIButton){
