@@ -6,12 +6,8 @@ target 'Oinnfi' do
   use_frameworks!
 
   # Pods for Oinnfi
-  pod 'AFNetworking', '~> 2.6.3'
-  pod ‘MBProgressHUD'
-  pod 'SDWebImage'
-  pod 'TPKeyboardAvoiding'
   pod 'SwiftyJSON'
-  pod 'Jukebox'
+  pod 'M13Checkbox'
   target 'OinnfiTests' do
     inherit! :search_paths
     # Pods for testing

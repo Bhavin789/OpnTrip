@@ -6,18 +6,18 @@
 //  Copyright © 2017 Bhavin. All rights reserved.
 //
 
+
 import UIKit
 import SwiftyJSON
-import AFNetworking
 import AVFoundation
 import AVKit
 import MediaPlayer
 import CoreData
 
 
-class ListForAudioViewController: UITableViewController {
+class ListForAudioViewController: UITableViewController, FilterProtocol {
     
-
+    
     var name: String!
     var cat_id: String!
     var count: Int!
@@ -36,6 +36,13 @@ class ListForAudioViewController: UITableViewController {
     var actInd: UIActivityIndicatorView = UIActivityIndicatorView()
     var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView()
     var isReceiving: Bool!
+    
+    var languageFilter = [String]()
+    var contentFilter = [String]()
+    var lengthFilter = [String]()
+    var testArray = [String]()
+    var result = [Item]()
+    var isFilterApplied: Bool!
     
     
     override func viewDidLoad() {
@@ -56,7 +63,7 @@ class ListForAudioViewController: UITableViewController {
         
         var loadingView: UIView = UIView()
         loadingView.frame = CGRect(x: view.center.x - 40, y: view.center.y - (self.navigationController?.navigationBar.frame.height)! - 40, width: 80, height: 80)
-       // loadingView.center = view.center
+        // loadingView.center = view.center
         loadingView.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 0.7)
         loadingView.clipsToBounds = true
         loadingView.layer.cornerRadius = 10
@@ -69,28 +76,49 @@ class ListForAudioViewController: UITableViewController {
         container.addSubview(loadingView)
         actInd.hidesWhenStopped = true
         self.tableView.backgroundView = container
-        
+        isFilterApplied = false
         count = 1;
-        getData()
+        if !isFilterApplied{
+            getData()
+        }
+        
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
-
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tableView.separatorStyle = .none
+        print("Vidw will appear")
+        print(isFilterApplied)
+        if isFilterApplied{
+            filterStories()
+        }
+    }
+    
+    func sendBoolean(_ filterApplied: Bool) {
+        isFilterApplied = filterApplied
+    }
+    
+    func applyTheFilters(_ languageFilterArray: [String], _ contentFilterArray: [String], _ lengthFilterArray: [String]) {
+        languageFilter = languageFilterArray
+        contentFilter = contentFilterArray
+        lengthFilter = lengthFilterArray
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
     // MARK: - Table view data source
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return items.count
@@ -106,100 +134,103 @@ class ListForAudioViewController: UITableViewController {
         }
         
         //while(isReceiving){
-            print(count)
-            let request = NSMutableURLRequest(url: NSURL(string: "\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")! as URL)
+        print(count)
+        let request = NSMutableURLRequest(url: NSURL(string: "\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")! as URL)
+        
+        print("\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")
+        
+        request.httpMethod = "GET"
+        
+        let task = URLSession.shared.dataTask(with: request.url!) { (data, response, error) -> Void in
             
-            print("\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")
-            
-            request.httpMethod = "GET"
-            
-            let task = URLSession.shared.dataTask(with: request.url!) { (data, response, error) -> Void in
-                
-                if let data = data {
-                    print()
-                    let json = JSON(data)
-                    for (_, subJson): (String, JSON) in json["datajson"]["products"]{
-                        if var item = Item(fromJson: subJson){
-                            
-                            // MARK: Loop to extract only the audio
-                            // print(item.narratorName)
-                            if item.narratorName == "null"{
-                                print("Take the call out")
+            if let data = data {
+                print()
+                let json = JSON(data)
+                for (_, subJson): (String, JSON) in json["datajson"]["products"]{
+                    if var item = Item(fromJson: subJson){
+                        
+                        
+                        // MARK: Loop to extract only the audio
+                        // print(item.narratorName)
+                        if item.narratorName == "null"{
+                            print("Take the call out")
+                        }
+                        
+                        for (_, subJson): (String, JSON) in item.audio{
+                            guard let audioId = subJson["id"].string,
+                                let proId = subJson["product_id"].string,
+                                let title = subJson["title"].string,
+                                let fullPath = subJson["full_path"].string,
+                                let cuttingPath = subJson["cutting_path"].string else{
+                                    return
                             }
                             
-                            for (_, subJson): (String, JSON) in item.audio{
-                                guard let audioId = subJson["id"].string,
-                                    let proId = subJson["product_id"].string,
-                                    let title = subJson["title"].string,
-                                    let fullPath = subJson["full_path"].string,
-                                    let cuttingPath = subJson["cutting_path"].string else{
-                                        return
+                            let audio = Audio(id: audioId, proId: proId, title: title, fullPath: fullPath, cutPath: cuttingPath)
+                            self.audio.append(audio)
+                        }
+                        
+                        // MARK: Loop to extract only the language
+                        
+                        for (_, subJson): (String, JSON) in item.features{
+                            let name = subJson["name"]
+                            switch name{
+                            case "Language":
+                                if let language = subJson["value"].string{
+                                    item.language = language
+                                    self.language.append(language)
+                                }else{
+                                    item.language = ""
                                 }
-                                
-                                let audio = Audio(id: audioId, proId: proId, title: title, fullPath: fullPath, cutPath: cuttingPath)
-                                self.audio.append(audio)
-                            }
-                            
-                            // MARK: Loop to extract only the language
-                            
-                            for (_, subJson): (String, JSON) in item.features{
-                                let name = subJson["name"]
-                                switch name{
-                                case "Language":
-                                    if let language = subJson["value"].string{
-                                        item.language = language
-                                        self.language.append(language)
-                                    }else{
-                                        item.language = ""
-                                    }
-                                case "Content Maturity":
-                                    if let maturity = subJson["value"].string{
-                                        item.contentMaturity = maturity
-                                    }else{
-                                        item.contentMaturity = ""
-                                    }
-                                case "Length":
-                                    if let length = subJson["value"].string{
-                                        item.length = length
-                                    }else{
-                                        item.length = ""
-                                    }
-                                default:
-                                    print("Locha hai")
+                            case "Content Maturity":
+                                if let maturity = subJson["value"].string{
+                                    item.contentMaturity = maturity
+                                }else{
+                                    item.contentMaturity = ""
                                 }
-                            }
-                            
-                            self.items.append(item)
-                        } else {
-                            self.isReceiving = false
-                            
-                            DispatchQueue.main.async {
-                                self.activityIndicatorView.stopAnimating()
-                                self.tableView.tableFooterView = nil
-                                print("Take the call out of the func")
-                                return
+                            case "Length":
+                                if let length = subJson["value"].string{
+                                    item.length = length
+                                }else{
+                                    item.length = ""
+                                }
+                            default:
+                                print("Locha hai")
                             }
                         }
+                        
+                        self.items.append(item)
+                    } else {
+                        self.isReceiving = false
+                        
+                        DispatchQueue.main.async {
+                            self.activityIndicatorView.stopAnimating()
+                            self.tableView.tableFooterView = nil
+                            print("Take the call out of the func")
+                            return
+                        }
                     }
-                    
-                    DispatchQueue.main.async {
-                        self.tableView.separatorStyle = .singleLine
-                        self.actInd.stopAnimating()
-                        self.container.isHidden = true
-                        self.tableView.reloadData()
-                    }
-                    
-                } else if let error = error {
-                    print(error.localizedDescription)
                 }
+                
+                DispatchQueue.main.async {
+                    self.tableView.separatorStyle = .singleLine
+                    self.actInd.stopAnimating()
+                    self.container.isHidden = true
+                    self.tableView.reloadData()
+                }
+                
+            } else if let error = error {
+                print(error.localizedDescription)
             }
-            task.resume()
+        }
+        task.resume()
         //}
         
         
         
         print("Task completed")
     }
+    
+    
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath) as? DownloadCell
@@ -227,7 +258,7 @@ class ListForAudioViewController: UITableViewController {
         self.present(viewController, animated: true, completion: nil)
         
     }
-            
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
         
@@ -241,12 +272,12 @@ class ListForAudioViewController: UITableViewController {
                 // This is the last cell
                 count = count + 1
                 if isReceiving{
-                   getData()
+                    getData()
                 }
                 print("Last cell")
             }
             if isReceiving{
-               setupTableViewFooter()
+                setupTableViewFooter()
             }
         }
     }
@@ -262,6 +293,15 @@ class ListForAudioViewController: UITableViewController {
         footerView.addSubview(activityIndicatorView)
         activityIndicatorView.frame = CGRect(x: footerView.frame.size.width / 2 - 15, y: 10, width: 30, height: 30)
         tableView.tableFooterView = footerView
+    }
+    
+    func filterStories(){
+        items.removeAll()
+        audio.removeAll()
+        
+        print("Filtering stories.......")
+        getData()
+        //getFilteredData()
     }
     
     @objc func downloadFileToDB(_ sender: UIButton){
@@ -285,7 +325,7 @@ class ListForAudioViewController: UITableViewController {
                             let filepath = documentsurl.appendingPathComponent("\(self.uuid()).jpg")
                             self.imagePath = filepath.path
                             try videoData.write(to: filepath, options: .atomic)
-                        
+                            
                         }catch{
                             print("Error while saving")
                         }
@@ -316,7 +356,7 @@ class ListForAudioViewController: UITableViewController {
                                 self.audioUrl = filepath.path
                                 
                                 try urlData.write(to: filepath, options: .atomic)
-                       
+                                
                             }catch {
                                 print("Error in writing the data to mediaPath")
                             }
@@ -339,7 +379,7 @@ class ListForAudioViewController: UITableViewController {
                 }else{
                     print("error gettign")
                 }
-                           })
+            })
         }
     }
     
@@ -389,56 +429,52 @@ class ListForAudioViewController: UITableViewController {
         let uuidStringRef: CFString = CFUUIDCreateString(nil, uuidRef)
         return (uuidStringRef as? String) ?? ""
     }
-        
+    
 }
 
-    /*
+/*
  
-    */
+ */
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
+/*
+ // Override to support conditional editing of the table view.
+ override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+ // Return false if you do not want the specified item to be editable.
+ return true
+ }
+ */
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
+/*
+ // Override to support editing the table view.
+ override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+ if editingStyle == .delete {
+ // Delete the row from the data source
+ tableView.deleteRows(at: [indexPath], with: .fade)
+ } else if editingStyle == .insert {
+ // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+ }
+ }
+ */
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+/*
+ // Override to support rearranging the table view.
+ override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+ }
+ */
 
-    }
-    */
+/*
+ // Override to support conditional rearranging of the table view.
+ override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+ // Return false if you do not want the item to be re-orderable.
+ return true
+ }
+ */
 
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
-
+/*
+ // MARK: - Navigation
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+ // Get the new view controller using segue.destinationViewController.
+ // Pass the selected object to the new view controller.
+ }
+ */
