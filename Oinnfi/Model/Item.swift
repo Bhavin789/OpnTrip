@@ -18,9 +18,9 @@ public struct Item{
     public var id: String
     public let features: JSON
     public let audio: JSON
-    public var language: String?
-    public var contentMaturity: String?
-    public var length: String?
+    public var language: String!
+    public var contentMaturity: String!
+    public var length: String!
     public var narratorName: String
     public var coverImage: String
     
@@ -59,9 +59,9 @@ public struct Item{
         }
         */
         
-        self.language = nil
-        self.contentMaturity = nil
-        self.length = nil
+        self.language = ""
+        self.contentMaturity = ""
+        self.length = ""
         
     }
     

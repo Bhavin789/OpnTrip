@@ -36,6 +36,9 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
     var actInd: UIActivityIndicatorView = UIActivityIndicatorView()
     var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView()
     var isReceiving: Bool!
+    var isLanguageFilterMatchFound: Bool!
+    var isLengthFilterMatchFound: Bool!
+    var isContentFilterMatchFound: Bool!
     
     var languageFilter = [String]()
     var contentFilter = [String]()
@@ -43,7 +46,14 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
     var testArray = [String]()
     var result = [Item]()
     var isFilterApplied: Bool!
+    var loadingView: UIView = UIView()
     
+    let noStoriesLabel: UILabel = {
+       let label = UILabel()
+       label.text = "No stories"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,9 +69,11 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
         container.frame = view.frame
         container.center = view.center
         container.backgroundColor = .white
+        container.frame = CGRect(x: view.center.x - 40, y: view.center.y - 40, width: 80, height: 80)
+        
         isReceiving = true
         
-        var loadingView: UIView = UIView()
+        
         loadingView.frame = CGRect(x: view.center.x - 40, y: view.center.y - (self.navigationController?.navigationBar.frame.height)! - 40, width: 80, height: 80)
         // loadingView.center = view.center
         loadingView.backgroundColor = UIColor(red: 255/255, green: 102/255, blue: 102/255, alpha: 0.7)
@@ -74,13 +86,14 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
         actInd.center = CGPoint(x: loadingView.frame.size.width / 2, y: loadingView.frame.size.height / 2)
         loadingView.addSubview(actInd)
         container.addSubview(loadingView)
+        container.addSubview(noStoriesLabel)
+        noStoriesLabel.isHidden = true
         actInd.hidesWhenStopped = true
         self.tableView.backgroundView = container
         isFilterApplied = false
+        setUpView()
         count = 1;
-        if !isFilterApplied{
-            getData()
-        }
+        
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -90,12 +103,23 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        items.removeAll()
+        audio.removeAll()
+        tableView.reloadData()
+        
+    
+        self.container.isHidden = false
+        noStoriesLabel.isHidden = true
         self.tableView.separatorStyle = .none
+        count = 1
         print("Vidw will appear")
-        print(isFilterApplied)
-        if isFilterApplied{
-            filterStories()
-        }
+        //if !isFilterApplied{
+            getData()
+        //}
+        //if isFilterApplied{
+        //    print(isFilterApplied)
+        //    filterStories()
+        //}
     }
     
     func sendBoolean(_ filterApplied: Bool) {
@@ -106,6 +130,26 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
         languageFilter = languageFilterArray
         contentFilter = contentFilterArray
         lengthFilter = lengthFilterArray
+    }
+    
+    @objc func rightButtonPressed(){
+        
+        let viewController = FilterViewController()
+        viewController.delegate = self
+        self.present(viewController, animated: true, completion: nil)
+    }
+    
+    func setUpView(){
+        let rightCustomeView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 44))
+        let savedSearch = UIButton(frame: CGRect(x: 20, y: 7, width: 30, height: 30))
+        savedSearch.setBackgroundImage(UIImage(named: "house"), for: .normal)
+        savedSearch.tag = 101
+        savedSearch.setTitleColor(UIColor.white, for: .normal)
+        savedSearch.addTarget(self, action: #selector(rightButtonPressed), for: .touchUpInside)
+        rightCustomeView.addSubview(savedSearch)
+        
+        let rightBarBtn = UIBarButtonItem(customView: rightCustomeView)
+        navigationItem.rightBarButtonItem = rightBarBtn
     }
     
     override func didReceiveMemoryWarning() {
@@ -132,8 +176,6 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
             print("error")
             return
         }
-        
-        //while(isReceiving){
         print(count)
         let request = NSMutableURLRequest(url: NSURL(string: "\(appDelegate.APPLICATIONURL)\("category")&id_category=\(categoryid)&p=\(count!)")! as URL)
         
@@ -148,13 +190,11 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
                 let json = JSON(data)
                 for (_, subJson): (String, JSON) in json["datajson"]["products"]{
                     if var item = Item(fromJson: subJson){
-                        
+                        self.isLanguageFilterMatchFound = false
+                        self.isLengthFilterMatchFound = false
+                        self.isContentFilterMatchFound = false
                         
                         // MARK: Loop to extract only the audio
-                        // print(item.narratorName)
-                        if item.narratorName == "null"{
-                            print("Take the call out")
-                        }
                         
                         for (_, subJson): (String, JSON) in item.audio{
                             guard let audioId = subJson["id"].string,
@@ -173,6 +213,7 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
                         
                         for (_, subJson): (String, JSON) in item.features{
                             let name = subJson["name"]
+                            print("The feature name is \(name)");
                             switch name{
                             case "Language":
                                 if let language = subJson["value"].string{
@@ -198,7 +239,48 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
                             }
                         }
                         
-                        self.items.append(item)
+                        if self.isFilterApplied{
+                            if self.languageFilter.count != 0{
+                                print(item.language)
+                                if self.languageFilter.contains(item.language){
+                                    self.isLanguageFilterMatchFound = true
+                                }else{
+                                    self.isLanguageFilterMatchFound = false
+                                }
+                            }else{
+                                self.isLanguageFilterMatchFound = true
+                            }
+                            
+                            if self.contentFilter.count != 0{
+                                if self.contentFilter.contains(item.contentMaturity){
+                                    self.isContentFilterMatchFound = true
+                                }else{
+                                    self.isContentFilterMatchFound = false
+                                }
+                            }else{
+                                self.isContentFilterMatchFound = true
+                            }
+                            
+                            if self.lengthFilter.count != 0{
+                                if self.lengthFilter.contains(item.length){
+                                    self.isLengthFilterMatchFound = true
+                                }else{
+                                    self.isLengthFilterMatchFound = false
+                                }
+                            }else{
+                                self.isLengthFilterMatchFound = true
+                            }
+                            
+                            if(self.isLengthFilterMatchFound && self.isContentFilterMatchFound && self.isLanguageFilterMatchFound){
+                                print("Adding the item")
+                                self.items.append(item)
+                            }
+                            
+                            
+                        }else{
+                            self.items.append(item)
+                        }
+                        
                     } else {
                         self.isReceiving = false
                         
@@ -214,11 +296,24 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
                 DispatchQueue.main.async {
                     self.tableView.separatorStyle = .singleLine
                     self.actInd.stopAnimating()
-                    self.container.isHidden = true
-                    self.tableView.reloadData()
+                    self.activityIndicatorView.stopAnimating()
+                    if self.items.count == 0{
+                        print("No stories")
+                        self.container.isHidden = false
+                        self.tableView.separatorStyle = .none
+                        self.loadingView.isHidden = true
+                        self.noStoriesLabel.isHidden = false
+                        self.tableView.reloadData()
+                    }else{
+                        self.container.isHidden = true
+                        self.tableView.reloadData()
+                    }
+                    //self.loadingView.isHidden = true
+                    
                 }
                 
             } else if let error = error {
+                self.showAlert(error.localizedDescription)
                 print(error.localizedDescription)
             }
         }
@@ -298,7 +393,7 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
     func filterStories(){
         items.removeAll()
         audio.removeAll()
-        
+        self.tableView.separatorStyle = .none
         print("Filtering stories.......")
         getData()
         //getFilteredData()
@@ -428,6 +523,12 @@ class ListForAudioViewController: UITableViewController, FilterProtocol {
         let uuidRef: CFUUID = CFUUIDCreate(nil)
         let uuidStringRef: CFString = CFUUIDCreateString(nil, uuidRef)
         return (uuidStringRef as? String) ?? ""
+    }
+    
+    func showAlert(_ msg: String){
+        let alert = UIAlertController(title: "OpenTrip", message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
 }
